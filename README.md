@@ -5,6 +5,54 @@
 - [Windows 실행 가이드](WINDOWS.md)
 - [macOS 실행 가이드](MACOS.md)
 
+## 제출 APK와 실행 방법
+
+- 팀명: **종브라더스**
+- 앱 이름: **우리차FM**
+- 제출 APK: [apk/종브라더스_우리차FM_release.apk](apk/종브라더스_우리차FM_release.apk)
+- 빌드 종류: **release**, 디버깅 비활성화, 별도 release 인증서로 서명
+- SHA-256: [APK 체크섬](apk/종브라더스_우리차FM_release.apk.sha256)
+
+미리 빌드한 APK는 소스를 다시 빌드하거나 서명키를 받지 않고 실행할 수 있습니다. 운영체제 가이드에 따라 Pleos 에뮬레이터와 Android 도구를 준비한 뒤 저장소 루트에서 실행합니다.
+
+macOS:
+
+```sh
+python3 scripts/run-vehicle.py --apk "apk/종브라더스_우리차FM_release.apk"
+```
+
+Windows PowerShell:
+
+```powershell
+py -3 scripts/run-vehicle.py --apk "apk/종브라더스_우리차FM_release.apk"
+```
+
+Android SDK의 `adb`가 PATH에 있으면 직접 설치할 수도 있습니다.
+
+```sh
+adb install -r "apk/종브라더스_우리차FM_release.apk"
+```
+
+Pleos 앱 목록에서 **우리차 FM**을 열고 재생 버튼을 누릅니다. 자동 재생은 하지 않습니다. 제출 APK는 **12초 테스트 안내음 4개**로 차량 재생·일시정지·사연 이동을 확인하는 공개 데모입니다. 가족 음성과 AI DJ가 포함된 방송을 직접 만드는 절차는 OS별 가이드에 있으며, 제출 APK에 개인 녹음은 들어 있지 않습니다.
+
+같은 패키지의 debug APK가 이미 설치돼 있으면 인증서가 달라 release APK로 덮어쓸 수 없습니다. 이때는 테스트 기기의 기존 앱을 직접 제거한 뒤 설치하세요. 제거하면 해당 앱의 로컬 재생 위치가 지워집니다.
+
+## 테스트 환경과 필요한 설정
+
+| 항목 | 개발·검증 기준 |
+|---|---|
+| Pleos Connect Emulator | **2.1.0** |
+| 차량 OS | Android 14 / API 34, ARM64 이미지 |
+| 화면 규격 | **2560 × 1440 px, 160 dpi** |
+| 가상 기기 | Pleos Connect v2.1.0, RAM 4GB, Cold boot |
+| 검증 호스트 | Apple Silicon macOS |
+| 빌드 도구 | JDK 17, Gradle 8.9, AGP 8.7.3, Kotlin 2.1.20 |
+| Android SDK | compile API 35, Build Tools 35.0.0 / min API 28, target API 34 |
+| 공개 APK 실행 설정 | 로그인·API 키·Firebase·Ollama·TTS 설치 불필요 |
+| 제출 release APK 검증 | 서명·디버깅 비활성화 확인, 설치 성공, 기기 테스트 **3개 통과** (2026-11-14) |
+
+제출 release APK로 Media3 브라우징·자동 재생 방지, 기존 MediaBrowser 호환, 실제 재생·다음 사연 이동·일시정지 테스트를 통과했습니다. 실차 버튼, 통화·내비 안내 중단/복귀, 주행 상태 전환의 종합 검증은 남아 있습니다. Windows 설치·실행 경로는 제공하지만 Windows 실기 검증 완료를 의미하지 않습니다.
+
 ## 코드 구성
 
 ```text
@@ -16,6 +64,7 @@ src/              React 가족용 녹음·방송 제작 화면
 server/           로컬 API, 파일 저장, 방송 제작 작업 관리
 scripts/          OS별 도구 검색, 빌드·실행, 음성 합성·오디오 편집
 tests/            편성·삭제·API·방송 제작 검증
+apk/              공모전 제출용 signed release APK와 체크섬
 ```
 
 ### 차량 앱
@@ -50,9 +99,28 @@ tests/            편성·삭제·API·방송 제작 검증
 
 공개 데모는 직접 생성한 안내음만 포함하며 외부 음성 API·유료 계정이 필요 없습니다. 도구·모델의 최초 다운로드와 각 배포처의 이용 조건 확인은 필요합니다.
 
-`.gitignore`는 `data/`, `.runtime/`, `.env`, `private/`, 원본 `음성파일/`, `결과물/`, 개인 SDK 경로, 생성 APK·빌드 캐시를 제외합니다. 원본 녹음과 신청서는 로컬에 보존합니다. Android SDK·Pleos 시스템 이미지·AI 모델은 저장소에 재배포하지 않습니다.
+`.gitignore`는 `data/`, `.runtime/`, `.env`, `private/`, 원본 `음성파일/`, `결과물/`, 개인 SDK 경로, 빌드 캐시와 제출본 외의 APK를 제외합니다. `apk/종브라더스_우리차FM_release.apk`는 제출을 위해 Git에 포함합니다. 원본 녹음과 신청서는 로컬에 보존합니다. Android SDK·Pleos 시스템 이미지·AI 모델·서명키·서명 비밀번호는 저장소에 재배포하지 않습니다.
 
 `WOORICHA_MEDIA_DIR`가 없으면 Gradle은 `demo/vehicle`을 사용합니다. 실행 스크립트는 프로젝트 내부 임시 폴더에 음원을 준비한 뒤 이 변수를 해당 빌드에만 전달합니다. 개인 방송은 명시적으로 `--episode-id`를 지정해야 하며, 만든 APK에도 해당 녹음이 포함됩니다.
+
+## Release APK 다시 빌드하기
+
+일반 소스 확인과 debug 빌드에는 서명키가 필요 없습니다. 제출 APK를 갱신할 때는 기존 release 서명키의 소유자가 다음 환경변수 또는 로컬 `private/signing/release.json`으로 설정합니다.
+
+```json
+{
+  "WOORICHA_KEYSTORE": "private/signing/wooricha-release.p12",
+  "WOORICHA_KEYSTORE_PASSWORD": "본인의 저장소 비밀번호",
+  "WOORICHA_KEY_ALIAS": "wooricha-release",
+  "WOORICHA_KEY_PASSWORD": "본인의 키 비밀번호"
+}
+```
+
+macOS는 `python3 scripts/build-vehicle.py --release --lint`, Windows는 `py -3 scripts/build-vehicle.py --release --lint`를 실행합니다. 성공하면 `apk/`에 제출 파일명으로 복사하고 체크섬을 갱신합니다. 서명 설정이 없으면 release 빌드는 중단되며, debug 키나 미서명 APK로 대체하지 않습니다. 서명키와 비밀번호는 공개하지 않고 별도로 백업합니다. [Android 공식 서명 안내](https://developer.android.com/studio/publish/app-signing).
+
+## GitHub 제출 정보 확인
+
+최종 파일을 커밋·푸시한 뒤 저장소 주소, APK 경로 `apk/종브라더스_우리차FM_release.apk`, `git rev-parse HEAD`로 확인한 최종 커밋 번호를 제출합니다. 심사에 지정할 커밋에 APK가 실제로 포함됐는지 확인하세요. 비공개 저장소를 제출하는 경우 공개 전환·유지 일정은 공모전의 최신 제출 안내를 따릅니다.
 
 ## 검증 명령
 

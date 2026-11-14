@@ -29,3 +29,7 @@ private/
 *.p12
 *service-account*.json
 firebase-adminsdk*.json
+*.docx
+*.apk
+!apk/종브라더스_우리차FM_release.apk
+!apk/종브라더스_우리차FM_release.apk

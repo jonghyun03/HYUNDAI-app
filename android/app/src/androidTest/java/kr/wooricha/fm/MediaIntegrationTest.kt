@@ -3,6 +3,7 @@ package kr.wooricha.fm
 import android.content.ComponentName
 import android.media.browse.MediaBrowser as LegacyBrowser
 import android.os.Bundle
+import android.os.SystemClock
 import androidx.media3.common.Player
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
@@ -21,6 +22,40 @@ class MediaIntegrationTest {
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
     private val context = instrumentation.targetContext
     private fun main(block: () -> Unit) = instrumentation.runOnMainSync(block)
+
+    private fun awaitState(message: String, condition: () -> Boolean) {
+        val deadline = SystemClock.elapsedRealtime() + 15000
+        while (SystemClock.elapsedRealtime() < deadline) {
+            var ready = false
+            main { ready = condition() }
+            if (ready) return
+            Thread.sleep(50)
+        }
+        fail(message)
+    }
+
+    @Test fun playbackStartsMovesToNextStoryAndPauses() {
+        lateinit var pending: ListenableFuture<MediaBrowser>
+        main { pending = MediaBrowser.Builder(context, SessionToken(context, ComponentName(context, RadioService::class.java))).buildAsync() }
+        val browser = pending.get(15, TimeUnit.SECONDS)
+        try {
+            main {
+                browser.setMediaItems(RadioCatalog(context).storyItems())
+                browser.prepare()
+                browser.play()
+            }
+            awaitState("Playback advances") { browser.isPlaying && browser.currentPosition > 100 }
+            main { browser.pause(); browser.seekTo(0, 0); browser.seekToNextMediaItem() }
+            awaitState("Next story selected") { browser.currentMediaItemIndex == 1 }
+            main { browser.play() }
+            awaitState("Next story plays") { browser.isPlaying && browser.currentPosition > 100 }
+            main { browser.pause() }
+            awaitState("Playback pauses") { !browser.isPlaying && !browser.playWhenReady }
+            main { assertNull(browser.playerError) }
+        } finally {
+            main { browser.pause(); browser.seekTo(0, 0); browser.release() }
+        }
+    }
 
     @Test fun media3BrowserFindsBroadcastAndStoriesWithoutAutoplay() {
         lateinit var pending: ListenableFuture<MediaBrowser>

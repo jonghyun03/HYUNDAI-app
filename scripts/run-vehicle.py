@@ -1,5 +1,6 @@
 """Install on a running Pleos device, or boot an Android Studio-created AVD."""
 import argparse
+from pathlib import Path
 import subprocess
 import time
 from android_env import ROOT, find_sdk, tool, sdk_environment
@@ -11,10 +12,13 @@ def main():
     parser.add_argument('--avd', default='WoorichaPleos')
     parser.add_argument('--gpu', choices=['auto', 'host', 'software', 'swiftshader'], default='auto')
     parser.add_argument('--no-launch-app', action='store_true')
+    parser.add_argument('--apk', type=Path, help='Install a prebuilt APK, including the submitted release APK.')
     args = parser.parse_args()
     sdk = find_sdk()
     adb, env = tool(sdk, 'adb'), sdk_environment(sdk)
-    apk = ROOT / 'android/app/build/outputs/apk/debug/app-debug.apk'
+    apk = args.apk or ROOT / 'android/app/build/outputs/apk/debug/app-debug.apk'
+    if not apk.is_absolute():
+        apk = ROOT / apk
     if not apk.exists():
         raise SystemExit('먼저 scripts/build-vehicle.py를 실행해 차량 APK를 빌드하세요.')
 

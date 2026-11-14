@@ -35,6 +35,16 @@ export ANDROID_HOME="/실제/Android/SDK/폴더"
 
 ## 3. 차량 앱 실행
 
+### 제출된 release APK 실행
+
+저장소에 포함된 제출 APK는 다시 빌드할 필요가 없습니다. 위 도구·Pleos 설정을 완료하고 실행합니다.
+
+```sh
+python3 scripts/run-vehicle.py --apk "apk/종브라더스_우리차FM_release.apk"
+```
+
+### 소스에서 debug 앱 빌드
+
 터미널에서 저장소 루트로 이동해 실행합니다.
 
 ```sh
@@ -109,6 +119,8 @@ npm run build
 python3 -m unittest discover -s tests -p 'test_*.py'
 python3 scripts/build-vehicle.py --lint
 ```
+
+제출 APK를 갱신하는 팀원은 README의 비공개 서명 설정을 준비한 뒤 `python3 scripts/build-vehicle.py --release --lint`를 실행합니다. 서명키는 Git에 포함하지 않습니다.
 
 Pleos 에뮬레이터를 켠 상태에서 미디어 연결 기기 테스트:
 
