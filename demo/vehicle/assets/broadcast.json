@@ -1,0 +1,35 @@
+{
+  "title": "공개 테스트 방송 · 안내음 4개",
+  "isDemo": true,
+  "durationMs": 12000,
+  "stories": [
+    {
+      "id": "demo-1",
+      "title": "재생 테스트 1",
+      "author": "테스트 음원",
+      "startMs": 0,
+      "endMs": 3000
+    },
+    {
+      "id": "demo-2",
+      "title": "재생 테스트 2",
+      "author": "테스트 음원",
+      "startMs": 3000,
+      "endMs": 6000
+    },
+    {
+      "id": "demo-3",
+      "title": "재생 테스트 3",
+      "author": "테스트 음원",
+      "startMs": 6000,
+      "endMs": 9000
+    },
+    {
+      "id": "demo-4",
+      "title": "재생 테스트 4",
+      "author": "테스트 음원",
+      "startMs": 9000,
+      "endMs": 12000
+    }
+  ]
+}
